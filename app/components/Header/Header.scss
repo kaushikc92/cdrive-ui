@@ -1,0 +1,12 @@
+$error-color: red;
+
+.navbar-expand-lg {
+	box-shadow: 0 1px 0 rgba(12,13,14,0.1), 0 1px 6px rgba(59,64,69,0.1);
+	background-color: #f7f7f7;
+	.navbar-brand {
+		color: #444;
+		&:hover, &:focus, &:active {
+			color: #000;
+		}
+	}
+}
