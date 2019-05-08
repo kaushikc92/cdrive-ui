@@ -1,4 +1,3 @@
-
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
@@ -6,13 +5,13 @@ import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
-import Drive from './Drive'
-import Shared from './Shared'
-import Sidebar from './Sidebar'
-import Services from './Services'
+import Drive from './Drive';
+import Shared from './Shared';
+import Sidebar from './Sidebar';
+import Services from './Services';
 import { changeModule, uploadCsv, getFiles, deleteFile, downloadFile,
     getServices, selectFile, shareFileWithOthers, getSharedFiles, 
-    downloadSharedFile, authenticateUser } from './actions'
+    downloadSharedFile } from './actions';
 
 const tabs = {
   drive: {
@@ -33,22 +32,13 @@ const tabs = {
 export class LandingPage extends React.PureComponent {
 
   componentDidMount() {
-    /*  
     const { getFiles, getServices, getSharedFiles } = this.props
     getFiles()
     getSharedFiles()
-    getServices()
-    */
+    //getServices()
   }
 
   render() {
-    const { authenticateUser, getFiles } = this.props;
-    if (authenticateUser()) {
-        return <h1>Welcome back!</h1>;
-    } else {
-        return (null);
-    }
-    /*  
     const { landingPage, changeModule, uploadCsv, deleteFile, downloadFile, selectFile, shareFileWithOthers, getSharedFiles, downloadSharedFile } = this.props
     let tab = tabs[landingPage.module]
     return (
@@ -63,7 +53,6 @@ export class LandingPage extends React.PureComponent {
         </div>
       </div>
     )
-    */
   }
 }
 
@@ -82,7 +71,6 @@ const mapDispatchToProps = dispatch => ({
   shareFileWithOthers: (data) => dispatch(shareFileWithOthers(data)),
   getSharedFiles: () => dispatch(getSharedFiles()),
   downloadSharedFile: (file_name, file_owner) => dispatch(downloadSharedFile(file_name, file_owner)),
-  authenticateUser: () => dispatch(authenticateUser()),
 })
 
 export default connect(

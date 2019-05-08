@@ -30,7 +30,7 @@ export function uploadCsv(data) {
 	return (dispatch, getState) => {
 		dispatch(uploadCSVInit())
         const cookies = new Cookies();
-        var auth_header = 'Basic ' + cookies.get('cdrive_token'); 
+        var auth_header = 'Bearer ' + cookies.get('columbus_token'); 
 		const request = axios({
             method: 'POST',
             url: `${cdriveUrl}upload/`,
@@ -54,7 +54,7 @@ const getFilesFail = createAction('GET_FILES_FAIL');
 export function getFiles() {
 	return(dispatch, getState) => {
     const cookies = new Cookies();
-    var auth_header = 'Basic ' + cookies.get('cdrive_token'); 
+    var auth_header = 'Bearer ' + cookies.get('columbus_token'); 
     const request = axios({
         method: 'GET',
         url: `${cdriveUrl}list/`,
@@ -77,7 +77,7 @@ const getSharedFilesFail = createAction('GET_SHARED_FILES_FAIL');
 export function getSharedFiles() {
   return(dispatch, getState) => {
     const cookies = new Cookies();
-    var auth_header = 'Basic ' + cookies.get('cdrive_token'); 
+    var auth_header = 'Bearer ' + cookies.get('columbus_token'); 
     const request = axios({
         method: 'GET',
         url: `${cdriveUrl}shared-files-list/`,
@@ -100,7 +100,7 @@ const shareFileDone = createAction('SHARE_FILE_DONE');
 export function shareFileWithOthers(data) {
   return(dispatch, getState) => {
     const cookies = new Cookies();
-    var auth_header = 'Basic ' + cookies.get('cdrive_token'); 
+    var auth_header = 'Bearer ' + cookies.get('columbus_token'); 
     dispatch(shareFileInit())
     const request = axios({
         method: 'POST',
@@ -125,7 +125,7 @@ const getServicesFail = createAction('GET_SERVICES_FAIL');
 export function getServices() {
   return(dispatch, getState) => {
     const cookies = new Cookies();
-    var auth_header = 'Basic ' + cookies.get('cdrive_token'); 
+    var auth_header = 'Bearer ' + cookies.get('columbus_token'); 
     const request = axios({
         method: 'GET',
         url: `${cdriveUrl}admin-api/services/`,
@@ -148,7 +148,7 @@ const deleteFileFail = createAction('DELETE_FILE_FAIL');
 export function deleteFile(fileName) {
 	return(dispatch, getState) => {
     const cookies = new Cookies();
-    let auth_header = 'Basic ' + cookies.get('cdrive_token');
+    let auth_header = 'Bearer ' + cookies.get('columbus_token');
 		const request = axios({
       method: 'DELETE',
       url: `${cdriveUrl}delete/?file_name=${fileName}`,
@@ -169,7 +169,7 @@ const downloadFileFail = createAction('DOWNLOADFILE_FAIL');
 export function downloadFile(fileName) {
   return(dispatch, getState) => {
     const cookies = new Cookies();
-    let auth_header = 'Basic ' + cookies.get('cdrive_token');
+    let auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'GET',
       url: `${cdriveUrl}download/?file_name=${fileName}`,
@@ -193,7 +193,7 @@ export function downloadFile(fileName) {
 export function downloadSharedFile(file_name, file_owner) {
   return(dispatch, getState) => {
     const cookies = new Cookies();
-    let auth_header = 'Basic ' + cookies.get('cdrive_token');
+    let auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'GET',
       url: `${cdriveUrl}download-shared-file/?file_name=${file_name}&file_owner=${file_owner}`,
@@ -210,48 +210,4 @@ export function downloadSharedFile(file_name, file_owner) {
       },
     );
   }
-}
-
-export function authenticateUser() {
-    return(dispatch, getState) => {
-        const cookies = new Cookies();
-        var columbus_token = cookies.get('columbus_token')
-        if (columbus_token != undefined) {
-            return true;
-        }
-
-        var url_string = window.location.href;
-        var url = new URL(url_string);
-        var code = url.searchParams.get("code");
-
-        if (code == null) {
-            const request = axios({
-                method: 'GET',
-                url: `${cdriveUrl}client-id/`
-            });
-            request.then(
-                response => {
-                    var client_id = response.data.client_id;
-                    var uri = `http://0.0.0.0:3000`;
-                    window.location.href = `${authUrl}o/authorize/?response_type=code&client_id=${client_id}&redirect_uri=${uri}&state=1234xyz`;
-                },
-            );
-            return false;
-        } else {
-            const request = axios({
-                method: 'POST',
-                url: `${cdriveUrl}authentication-token/`,
-                data: {
-                    code: code,
-                    redirect_uri: `http://0.0.0.0:3000`
-                }
-            });
-            request.then(
-                response => {
-                    cookies.set('columbus_token', response.data.access_token);
-                }
-            );
-            return true;
-        }
-    }
 }

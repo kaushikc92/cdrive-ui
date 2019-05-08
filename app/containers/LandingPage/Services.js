@@ -5,19 +5,18 @@ import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
-import Cookies from 'js-cookie';
 import _ from 'underscore'
 const services = {
-  valueNormalizer: {
-    DisplayName: "Value Normalizer",
-    url: `http://ec2-54-163-167-78.compute-1.amazonaws.com:4200/${Cookies.get("cdrive_token")}`,
-    description: 'Cloud microservice for normalizing values of an attribute'
-  },
   htmlbrowser: {
-    DisplayName: "HTML browser",
+    DisplayName: "HTML Browser",
     url: `${window.location.origin}/htmlbrowser/`,
     description: 'Cloud microservice to view CSV file as HTML table'
   },
+  syndetector: {
+      DisplayName: 'Missing Value Synonym Detector',
+      url: `www.google.com`,
+      description: ''
+  }
 }
 
 export class Services extends React.PureComponent {
