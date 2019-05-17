@@ -1,6 +1,4 @@
 import React from 'react';
-import Navbar from 'react-bootstrap/Navbar';
-import Button from 'react-bootstrap/Button';
 import './App.css';
 
 class App extends React.Component {
@@ -8,13 +6,13 @@ class App extends React.Component {
     return(
       <div className="cdrive-container" >
         <div className="left-panel">
-          <Navbar>
-            <Navbar.Brand href="#home">Columbus</Navbar.Brand>
-          </Navbar>
+          <nav className="navbar navbar-expand navbar-light">
+            <a href="#home" className="navbar-brand">Columbus</a>
+          </nav>
           <div className="side-bar">
-            <Button variant="primary">
+            <button type="button" className="btn btn-primary">
               Upload File
-            </Button>
+            </button>
             <ul className="side-bar-list">
               <li className="side-bar-list-item">My Files</li>
               <li className="side-bar-list-item">Shared With Me</li>
@@ -23,14 +21,14 @@ class App extends React.Component {
           </div>
         </div>
         <div className="right-panel">
-          <Navbar>
-            <Navbar.Brand href="#home">CDrive</Navbar.Brand>
-            <Navbar.Collapse className="justify-content-end">
-              <Navbar.Text>
+          <nav className="navbar navbar-expand navbar-light">
+            <a href="#home" className="navbar-brand">CDrive</a>
+            <div className="justify-content-end navbar-collapse collapse">
+              <span className="navbar-text">
                 Signed in as: <a href="#login">Kaushik Chandrasekhar</a>
-              </Navbar.Text>
-            </Navbar.Collapse>
-          </Navbar>
+              </span>
+            </div>
+          </nav>
         </div>
       </div>
     );
