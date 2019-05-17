@@ -1,6 +1,26 @@
 .cdrive-container {
   width: 100%;
-  max-width: 330px;
-  padding: 15px;
-  margin: auto;
+  height: 100%;
+  display: flex;
+  font-family: AtlasGrotesk,sans-serif;
+  /* margin: auto; */
+}
+.left-panel {
+  width: 20%;
+  background-color: #F7F9FA;
+}
+.right-panel {
+  width: 80%;
+  /* height: 100%; */
+}
+.side-bar {
+  padding: 10%;
+}
+.side-bar-list {
+  list-style-type: none;
+  padding: 0px;
+  margin: 30px 0px 0px 0px;;
+}
+.side-bar-list-item {
+  padding: 10px;
 }
