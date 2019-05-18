@@ -9,8 +9,12 @@ class App extends React.Component {
     super(props);
     this.state = {
       username: '',
-      fullname: ''
-    }
+      fullname: '',
+      isUploading: false
+    };
+    this.fileInput = React.createRef();
+    this.onUploadClick = this.onUploadClick.bind(this);
+    this.handleUploadFile = this.handleUploadFile.bind(this);
   }
   authenticateUser() {
     const cookies = new Cookies();
@@ -72,6 +76,29 @@ class App extends React.Component {
       }
     );
   }
+  onUploadClick() {
+    this.fileInput.current.click();
+  }
+  handleUploadFile(event) {
+    event.preventDefault();
+    const data = new FormData();
+    data.append('file', this.fileInput.current.files[0]);
+    this.setState({isUploading: true});
+    const cookies = new Cookies();
+    var auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'POST',
+      url: `${cdriveUrl}upload/`,
+      data: data,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        this.setState({isUploading: false});
+      }
+    );
+    this.fileInput.current.value = "";
+  }
   render() {
     if (this.state.username === '') {
       this.authenticateUser();
@@ -84,9 +111,13 @@ class App extends React.Component {
               <a href="#home" className="navbar-brand">Columbus</a>
             </nav>
             <div className="side-bar">
-              <button type="button" className="btn btn-primary">
-                Upload File
-              </button>
+              <form className="form-upload" method="post">
+                <input type="file" className="file-upload-input" ref={this.fileInput}
+                  onChange={this.handleUploadFile}/>
+                <button type="button" className="btn btn-primary" onClick={this.onUploadClick} >
+                  Upload File
+                </button>
+              </form>
               <ul className="side-bar-list">
                 <li className="side-bar-list-item">My Files</li>
                 <li className="side-bar-list-item">Shared With Me</li>
