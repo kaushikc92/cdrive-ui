@@ -1,8 +1,28 @@
 import React from 'react';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
 import { authUrl, cdriveUrl } from './GlobalVariables';
+import Drive from './Drive';
+import Shared from './Shared';
+import Applications from './Applications';
 import './App.css';
+
+const tabs = {
+  drive: {
+    DisplayName: "My Files",
+    Component: Drive,
+  },
+  shared: {
+    DisplayName: "Shared with me",
+    Component: Shared,
+  },
+  applications: {
+    DisplayName: "Applications",
+    Component: Applications,
+  }
+}
 
 class App extends React.Component {
   constructor(props) {
@@ -10,11 +30,14 @@ class App extends React.Component {
     this.state = {
       username: '',
       fullname: '',
-      isUploading: false
+      //firstname: '',
+      isUploading: false,
+      activeTab: 'drive'
     };
     this.fileInput = React.createRef();
     this.onUploadClick = this.onUploadClick.bind(this);
     this.handleUploadFile = this.handleUploadFile.bind(this);
+    this.handleTabClick = this.handleTabClick.bind(this);
   }
   authenticateUser() {
     const cookies = new Cookies();
@@ -70,6 +93,7 @@ class App extends React.Component {
         this.setState({
           username: response.data.username,
           fullname: response.data.firstname + ' ' + response.data.lastname
+          //firstname: response.data.firstname
         });
       },
       err => {
@@ -99,11 +123,17 @@ class App extends React.Component {
     );
     this.fileInput.current.value = "";
   }
+  handleTabClick(event) {
+    console.log(event.target.getAttribute('tab-id'));
+    this.setState({activeTab: event.target.getAttribute('tab-id')});
+  }
   render() {
     if (this.state.username === '') {
       this.authenticateUser();
       return (null);
     } else {
+      var logoutUrl = `${authUrl}accounts/logout/`;
+      let tab = tabs[this.state.activeTab];
       return(
         <div className="cdrive-container" >
           <div className="left-panel">
@@ -119,9 +149,12 @@ class App extends React.Component {
                 </button>
               </form>
               <ul className="side-bar-list">
-                <li className="side-bar-list-item">My Files</li>
-                <li className="side-bar-list-item">Shared With Me</li>
-                <li className="side-bar-list-item">Services</li>
+                <li className={this.state.activeTab === "drive" ? "active-side-bar-list-item": "side-bar-list-item"} 
+                  tab-id="drive" onClick={this.handleTabClick}>My Files</li>
+                <li className={this.state.activeTab === "shared" ? "active-side-bar-list-item": "side-bar-list-item"} 
+                  tab-id="shared" onClick={this.handleTabClick}>Shared With Me</li>
+                <li className={this.state.activeTab === "applications" ? "active-side-bar-list-item": "side-bar-list-item"} 
+                  tab-id="applications" onClick={this.handleTabClick}>Applications</li>
               </ul>
             </div>
           </div>
@@ -129,11 +162,13 @@ class App extends React.Component {
             <nav className="navbar navbar-expand navbar-light">
               <a href="#home" className="navbar-brand">CDrive</a>
               <div className="justify-content-end navbar-collapse collapse">
-                <span className="navbar-text">
-                  Signed in as: <a href="#login">{this.state.fullname}</a>
-                </span>
+                <DropdownButton id="dropdown-basic-button" variant="transparent" 
+                  title={this.state.fullname} alignRight >
+                  <Dropdown.Item href={logoutUrl} >Logout</Dropdown.Item>
+                </DropdownButton>
               </div>
             </nav>
+            <tab.Component /> 
           </div>
         </div>
       );

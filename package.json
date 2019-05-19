@@ -9,6 +9,7 @@
     "react-dom": "^16.8.6",
     "react-router-dom": "^5.0.0",
     "react-scripts": "3.0.1",
+    "underscore": "^1.9.1",
     "universal-cookie": "^4.0.0"
   },
   "scripts": {
