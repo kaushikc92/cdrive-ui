@@ -3,4 +3,11 @@
 }
 th {
   font-weight: normal;
+  font-family: sans-serif;
+  font-size: 16px;
+}
+td {
+  color: #1B2733;
+  font-family: sans-serif;
+  font-size: 16px;
 }

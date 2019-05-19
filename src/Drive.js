@@ -8,34 +8,9 @@ import { cdriveUrl } from './GlobalVariables';
 import './Drive.css';
 
 class Drive extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      files: [],
-    };
-  }
-  getFiles() {
-    const cookies = new Cookies();
-    var auth_header = 'Bearer ' + cookies.get('columbus_token');
-    const request = axios({
-      method: 'GET',
-      url: `${cdriveUrl}list/`,
-      headers: {'Authorization': auth_header}
-    });
-    request.then(
-      response => {
-        this.setState({files: response.data});
-      },
-      err => {
-      }
-    );
-  }
-  componentDidMount() {
-    this.getFiles();
-  }
   render() {
     let rows;
-    rows = this.state.files.map((fileItem, i) => (
+    rows = this.props.files.map((fileItem, i) => (
       <tr key={i}>
         <td><div className="file-table-text">{fileItem.file_name}</div></td>
         <td><div className="file-table-text">{fileItem.file_size}</div></td>

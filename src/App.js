@@ -30,9 +30,9 @@ class App extends React.Component {
     this.state = {
       username: '',
       fullname: '',
-      //firstname: '',
       isUploading: false,
-      activeTab: 'drive'
+      activeTab: 'drive',
+      files: []
     };
     this.fileInput = React.createRef();
     this.onUploadClick = this.onUploadClick.bind(this);
@@ -44,6 +44,7 @@ class App extends React.Component {
     var columbus_token = cookies.get('columbus_token');
     if (columbus_token !== undefined) {
       this.fetchUserDetails();
+      this.getFiles();
       return(null);
     }
     var url_string = window.location.href;
@@ -74,6 +75,7 @@ class App extends React.Component {
         response => {
           cookies.set('columbus_token', response.data.access_token);
           this.fetchUserDetails();
+          this.getFiles();
         },
         err => {
         }
@@ -93,8 +95,23 @@ class App extends React.Component {
         this.setState({
           username: response.data.username,
           fullname: response.data.firstname + ' ' + response.data.lastname
-          //firstname: response.data.firstname
         });
+      },
+      err => {
+      }
+    );
+  }
+  getFiles() {
+    const cookies = new Cookies();
+    var auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'GET',
+      url: `${cdriveUrl}list/`,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        this.setState({files: response.data});
       },
       err => {
       }
@@ -119,6 +136,7 @@ class App extends React.Component {
     request.then(
       response => {
         this.setState({isUploading: false});
+        this.getFiles();
       }
     );
     this.fileInput.current.value = "";
@@ -168,7 +186,7 @@ class App extends React.Component {
                 </DropdownButton>
               </div>
             </nav>
-            <tab.Component /> 
+            <tab.Component files={this.state.files} /> 
           </div>
         </div>
       );
