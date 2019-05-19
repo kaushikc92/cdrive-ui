@@ -138,7 +138,7 @@ class App extends React.Component {
         <div className="cdrive-container" >
           <div className="left-panel">
             <nav className="navbar navbar-expand navbar-light">
-              <a href="#home" className="navbar-brand">Columbus</a>
+              <span className="navbar-brand">CDrive</span>
             </nav>
             <div className="side-bar">
               <form className="form-upload" method="post">
@@ -160,7 +160,7 @@ class App extends React.Component {
           </div>
           <div className="right-panel">
             <nav className="navbar navbar-expand navbar-light">
-              <a href="#home" className="navbar-brand">CDrive</a>
+              <span className="navbar-brand">{tab.DisplayName}</span>
               <div className="justify-content-end navbar-collapse collapse">
                 <DropdownButton id="dropdown-basic-button" variant="transparent" 
                   title={this.state.fullname} alignRight >

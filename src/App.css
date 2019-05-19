@@ -13,8 +13,12 @@
   width: 80%;
   padding: 20px 10px 0px 20px;
 }
+.right-panel-item {
+  width: 80%;
+  padding-top: 10px;
+}
 .side-bar {
-  padding: 10%;
+  padding: 20px;
 }
 .side-bar-list {
   list-style-type: none;
