@@ -17,6 +17,7 @@ class Drive extends React.Component {
     };
     this.toggleModal = this.toggleModal.bind(this);
     this.shareFile = this.shareFile.bind(this);
+    this.downloadFile = this.downloadFile.bind(this);
   }
   handleShareClick(filename) {
     this.setState({selectedFile: filename});
@@ -42,6 +43,26 @@ class Drive extends React.Component {
   toggleModal() {
     this.setState({ show: !this.state.show });
   }
+  downloadFile(e, fileName) {
+    const cookies = new Cookies();
+    let auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'GET',
+      url: `${cdriveUrl}download/?file_name=${fileName}`,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        const link = document.createElement('a');
+        link.href = response.data.download_url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      },
+      err => {
+      }
+    );
+  }
   render() {
     let rows;
     rows = this.props.files.map((fileItem, i) => (
@@ -55,7 +76,9 @@ class Drive extends React.Component {
             <Dropdown.Item onClick={() => this.handleShareClick(fileItem.file_name)}>
               Share
             </Dropdown.Item>
-            <Dropdown.Item href="#" >Download</Dropdown.Item>
+            <Dropdown.Item onClick={e => this.downloadFile(e, fileItem.file_name)}>
+              Download
+            </Dropdown.Item>
             <Dropdown.Item href="#" >Delete</Dropdown.Item>
           </DropdownButton>
         </td>
