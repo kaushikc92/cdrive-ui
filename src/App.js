@@ -100,6 +100,8 @@ class App extends React.Component {
         });
       },
       err => {
+        const cookies = new Cookies();
+        cookies.remove('columbus_token'); 
       }
     );
   }
