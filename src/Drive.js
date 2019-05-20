@@ -6,7 +6,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import { cdriveUrl } from './GlobalVariables';
 import ShareModal from './ShareModal';
-import './Drive.css';
+import './FileTable.css';
 
 class Drive extends React.Component {
   constructor(props) {
@@ -43,7 +43,7 @@ class Drive extends React.Component {
   toggleModal() {
     this.setState({ show: !this.state.show });
   }
-  downloadFile(e, fileName) {
+  downloadFile(fileName) {
     const cookies = new Cookies();
     let auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
@@ -76,10 +76,12 @@ class Drive extends React.Component {
             <Dropdown.Item onClick={() => this.handleShareClick(fileItem.file_name)}>
               Share
             </Dropdown.Item>
-            <Dropdown.Item onClick={e => this.downloadFile(e, fileItem.file_name)}>
+            <Dropdown.Item onClick={() => this.downloadFile(fileItem.file_name)}>
               Download
             </Dropdown.Item>
-            <Dropdown.Item href="#" >Delete</Dropdown.Item>
+            <Dropdown.Item onClick={() => this.props.deleteFile(fileItem.file_name)}>
+              Delete
+            </Dropdown.Item>
           </DropdownButton>
         </td>
       </tr>

@@ -38,6 +38,8 @@ class App extends React.Component {
     this.onUploadClick = this.onUploadClick.bind(this);
     this.handleUploadFile = this.handleUploadFile.bind(this);
     this.handleTabClick = this.handleTabClick.bind(this);
+    this.deleteFile = this.deleteFile.bind(this);
+    this.handleLogoutClick = this.handleLogoutClick.bind(this);
   }
   authenticateUser() {
     const cookies = new Cookies();
@@ -145,6 +147,26 @@ class App extends React.Component {
     console.log(event.target.getAttribute('tab-id'));
     this.setState({activeTab: event.target.getAttribute('tab-id')});
   }
+  deleteFile(fileName) {
+    const cookies = new Cookies();
+    let auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'DELETE',
+      url: `${cdriveUrl}delete/?file_name=${fileName}`,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        this.getFiles();
+      },
+      err => {
+      }
+    );
+  }
+  handleLogoutClick(event) {
+    const cookies = new Cookies();
+    cookies.remove('columbus_token'); 
+  }
   render() {
     if (this.state.username === '') {
       this.authenticateUser();
@@ -182,11 +204,11 @@ class App extends React.Component {
               <div className="justify-content-end navbar-collapse collapse">
                 <DropdownButton id="dropdown-basic-button" variant="transparent" 
                   title={this.state.fullname} alignRight >
-                  <Dropdown.Item href={logoutUrl} >Logout</Dropdown.Item>
+                  <Dropdown.Item href={logoutUrl} onClick={this.handleLogoutClick}>Logout</Dropdown.Item>
                 </DropdownButton>
               </div>
             </nav>
-            <tab.Component files={this.state.files} /> 
+            <tab.Component files={this.state.files} deleteFile={this.deleteFile} /> 
           </div>
         </div>
       );
