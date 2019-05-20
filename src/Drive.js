@@ -64,6 +64,9 @@ class Drive extends React.Component {
     );
   }
   render() {
+    if(this.props.files.length == 0) {
+      return(null);
+    }
     let rows;
     rows = this.props.files.map((fileItem, i) => (
       <tr key={i}>

@@ -55,6 +55,9 @@ class Shared extends React.Component {
     );
   }
   render() {
+    if(this.state.sharedFiles.length == 0) {
+      return(null);
+    }
     let rows;
     rows = this.state.sharedFiles.map((fileItem, i) => (
       <tr key={i}>
