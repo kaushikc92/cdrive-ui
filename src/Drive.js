@@ -5,9 +5,43 @@ import Table from 'react-bootstrap/Table';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import { cdriveUrl } from './GlobalVariables';
+import ShareModal from './ShareModal';
 import './Drive.css';
 
 class Drive extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      show: false,
+      selectedFile: '',
+    };
+    this.toggleModal = this.toggleModal.bind(this);
+    this.shareFile = this.shareFile.bind(this);
+  }
+  handleShareClick(filename) {
+    this.setState({selectedFile: filename});
+    this.toggleModal();
+  }
+  shareFile(e, email) {
+    e.preventDefault();
+    this.setState({
+      show: false,
+    });
+    const data = new FormData();
+    data.append('file_name', this.state.selectedFile);
+    data.append('share_with', email);
+    const cookies = new Cookies();
+    var auth_header = 'Bearer ' + cookies.get('columbus_token');
+    axios({
+      method: 'POST',
+      url: `${cdriveUrl}share-file/`,
+      data: data,
+      headers: {'Authorization': auth_header}
+    });
+  }
+  toggleModal() {
+    this.setState({ show: !this.state.show });
+  }
   render() {
     let rows;
     rows = this.props.files.map((fileItem, i) => (
@@ -18,7 +52,9 @@ class Drive extends React.Component {
         <td>
           <DropdownButton variant="transparent" 
             title="" alignRight >
-            <Dropdown.Item href="#" >Share</Dropdown.Item>
+            <Dropdown.Item onClick={() => this.handleShareClick(fileItem.file_name)}>
+              Share
+            </Dropdown.Item>
             <Dropdown.Item href="#" >Download</Dropdown.Item>
             <Dropdown.Item href="#" >Delete</Dropdown.Item>
           </DropdownButton>
@@ -41,6 +77,9 @@ class Drive extends React.Component {
             {rows}
           </tbody>
         </Table>
+        <ShareModal show={this.state.show} toggleModal={this.toggleModal} selectedFile={this.state.selectedFile}
+        shareFile={this.shareFile} >
+        </ShareModal>
       </div>
     );
   }
