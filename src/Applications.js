@@ -10,9 +10,9 @@ const applications = {
 
 class Applications extends React.Component {
   render() {
-    let links = applications.map(app, (app, i) => (
+    let links = Object.keys(applications).map((app, i) => (
       <li>
-        <a href={app.url}>app.displayName</a>
+        <a href={applications[app]['url']}>{applications[app]['displayName']}</a>
       </li>
     ));
     return(

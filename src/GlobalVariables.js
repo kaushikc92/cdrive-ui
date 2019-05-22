@@ -1,4 +1,3 @@
-const authUrl = "http://0.0.0.0:8000/";
-const cdriveUrl = "http://0.0.0.0:8001/";
+const columbusUrl = "https://a9f7202c77b7e11e98ea412ac368fc7a-1830034118.us-east-1.elb.amazonaws.com/";
 
-export {authUrl, cdriveUrl};
+export {columbusUrl};

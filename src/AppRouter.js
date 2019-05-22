@@ -5,10 +5,10 @@ import App from './App';
 class AppRouter extends React.Component {
     render() {
         return(
-            <Router>
+          <Router basename={'/cdrive'}>
                 <Switch>
-                    <Route path="/home/" component={App} />
-                    <Redirect from='*' to='/home/' />
+                  <Route path='/home/' component={App} />
+                  <Redirect from='*' to='/home/' />
                 </Switch>
             </Router>
         );

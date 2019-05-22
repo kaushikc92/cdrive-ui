@@ -4,7 +4,7 @@ import Cookies from 'universal-cookie';
 import Table from 'react-bootstrap/Table';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
-import { cdriveUrl } from './GlobalVariables';
+import { columbusUrl } from './GlobalVariables';
 import './FileTable.css';
 
 class Shared extends React.Component {
@@ -20,7 +20,7 @@ class Shared extends React.Component {
     var auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'GET',
-      url: `${cdriveUrl}shared-files-list/`,
+      url: `${columbusUrl}api/v1/cdrive/shared-files-list/`,
       headers: {'Authorization': auth_header}
     });
     request.then(
@@ -39,7 +39,7 @@ class Shared extends React.Component {
     let auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'GET',
-      url: `${cdriveUrl}download-shared-file/?file_name=${fileName}&file_owner=${fileOwner}`,
+      url: `${columbusUrl}api/v1/cdrive/download-shared-file/?file_name=${fileName}&file_owner=${fileOwner}`,
       headers: {'Authorization': auth_header}
     });
     request.then(
@@ -55,7 +55,7 @@ class Shared extends React.Component {
     );
   }
   render() {
-    if(this.state.sharedFiles.length == 0) {
+    if(this.state.sharedFiles.length === 0) {
       return(null);
     }
     let rows;
