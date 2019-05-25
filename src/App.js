@@ -7,6 +7,7 @@ import { columbusUrl } from './GlobalVariables';
 import Drive from './Drive';
 import Shared from './Shared';
 import Applications from './Applications';
+import InstallAppModal from './InstallAppModal';
 import './App.css';
 
 const tabs = {
@@ -32,11 +33,16 @@ class App extends React.Component {
       fullname: '',
       isUploading: false,
       activeTab: 'drive',
-      files: []
+      files: [],
+      applications: [],
+      showInstallAppDialog: false
     };
     this.fileInput = React.createRef();
     this.onUploadClick = this.onUploadClick.bind(this);
     this.handleUploadFile = this.handleUploadFile.bind(this);
+    this.handleInstallAppClick = this.handleInstallAppClick.bind(this);
+    this.installApp = this.installApp.bind(this);
+    this.toggleInstallAppDialog = this.toggleInstallAppDialog.bind(this);
     this.handleTabClick = this.handleTabClick.bind(this);
     this.deleteFile = this.deleteFile.bind(this);
     this.handleLogoutClick = this.handleLogoutClick.bind(this);
@@ -151,8 +157,53 @@ class App extends React.Component {
     );
     this.fileInput.current.value = "";
   }
+  getApplications() {
+    const cookies = new Cookies();
+    var auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'GET',
+      url: `${columbusUrl}api/v1/cdrive/applications-list/`,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        this.setState({applications: response.data});
+      },
+      err => {
+      }
+    );
+  }
+  handleInstallAppClick(event) {
+    this.toggleInstallAppDialog();
+  }
+  toggleInstallAppDialog() {
+    this.setState({ showInstallAppDialog: !this.state.showInstallAppDialog });
+  }
+  installApp(event, dockerUrl) {
+    event.preventDefault();
+    this.setState({
+      showInstallAppDialog: false
+    });
+    const data = new FormData();
+    data.append('app_docker_link', dockerUrl);
+    const cookies = new Cookies();
+    var auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'POST',
+      url: `${columbusUrl}api/v1/cdrive/install-application/`,
+      data: data,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        this.getApplications();
+      }
+    );
+  }
   handleTabClick(event) {
-    console.log(event.target.getAttribute('tab-id'));
+    if(event.target.getAttribute('tab-id') === 'applications') {
+      this.getApplications();
+    }
     this.setState({activeTab: event.target.getAttribute('tab-id')});
   }
   deleteFile(fileName) {
@@ -194,6 +245,23 @@ class App extends React.Component {
     } else {
       var logoutUrl = `${columbusUrl}authentication/accounts/logout/`;
       let tab = tabs[this.state.activeTab];
+
+      let addButton;
+      if (this.state.activeTab === "applications") {
+        addButton = 
+          <button type="button" className="btn btn-primary" onClick={this.handleInstallAppClick} >
+            Install Application
+          </button> ;
+      } else {
+        addButton = 
+          <form className="form-upload" method="post">
+            <input type="file" className="file-upload-input" ref={this.fileInput}
+              onChange={this.handleUploadFile}/>
+            <button type="button" className="btn btn-primary" onClick={this.onUploadClick} >
+              Upload File
+            </button>
+          </form> ;
+      }
       return(
         <div className="cdrive-container" >
           <div className="left-panel">
@@ -201,13 +269,7 @@ class App extends React.Component {
               <span className="navbar-brand">CDrive</span>
             </nav>
             <div className="side-bar">
-              <form className="form-upload" method="post">
-                <input type="file" className="file-upload-input" ref={this.fileInput}
-                  onChange={this.handleUploadFile}/>
-                <button type="button" className="btn btn-primary" onClick={this.onUploadClick} >
-                  Upload File
-                </button>
-              </form>
+              {addButton}
               <ul className="side-bar-list">
                 <li className={this.state.activeTab === "drive" ? "active-side-bar-list-item": "side-bar-list-item"} 
                   tab-id="drive" onClick={this.handleTabClick}>My Files</li>
@@ -228,8 +290,10 @@ class App extends React.Component {
                 </DropdownButton>
               </div>
             </nav>
-            <tab.Component files={this.state.files} deleteFile={this.deleteFile} /> 
+            <tab.Component files={this.state.files} deleteFile={this.deleteFile} applications={this.state.applications} /> 
           </div>
+          <InstallAppModal show={this.state.showInstallAppDialog} toggleModal={this.toggleInstallAppDialog} installApp={this.installApp} >
+          </InstallAppModal>
         </div>
       );
     }
