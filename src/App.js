@@ -40,6 +40,7 @@ class App extends React.Component {
     this.fileInput = React.createRef();
     this.onUploadClick = this.onUploadClick.bind(this);
     this.handleUploadFile = this.handleUploadFile.bind(this);
+    this.getApplications = this.getApplications.bind(this);
     this.handleInstallAppClick = this.handleInstallAppClick.bind(this);
     this.installApp = this.installApp.bind(this);
     this.toggleInstallAppDialog = this.toggleInstallAppDialog.bind(this);
