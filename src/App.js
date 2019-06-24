@@ -3,7 +3,7 @@ import axios from 'axios';
 import Cookies from 'universal-cookie';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
-import { columbusUrl } from './GlobalVariables';
+import { authenticationUrl, cdriveApiUrl, cdriveUrl } from './GlobalVariables';
 import Drive from './Drive';
 import Shared from './Shared';
 import Applications from './Applications';
@@ -62,16 +62,16 @@ class App extends React.Component {
     if (code == null) {
       const request = axios({
         method: 'GET',
-        url: `${columbusUrl}api/v1/cdrive/client-id/`
+        url: `${cdriveApiUrl}client-id/`
       });
       request.then(
         response => {
           var client_id = response.data.client_id;
           //var uri = `http://` + window.location.host + window.location.pathname;
           //window.location.href = `${authUrl}o/authorize/?response_type=code&client_id=${client_id}&redirect_uri=${uri}&state=1234xyz`;
-          var redirect_uri = `${columbusUrl}cdrive/home/`;
+          var redirect_uri = `${cdriveUrl}`;
           const link = document.createElement('a');
-          link.href = `${columbusUrl}authentication/o/authorize/?response_type=code&client_id=${client_id}&redirect_uri=${redirect_uri}&state=1234xyz`;
+          link.href = `${authenticationUrl}o/authorize/?response_type=code&client_id=${client_id}&redirect_uri=${redirect_uri}&state=1234xyz`;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
@@ -80,10 +80,10 @@ class App extends React.Component {
     } else {
       const request = axios({
         method: 'POST',
-        url: `${columbusUrl}api/v1/cdrive/authentication-token/`,
+        url: `${cdriveApiUrl}authentication-token/`,
         data: {
           code: code,
-          redirect_uri: `${columbusUrl}cdrive/home/`
+          redirect_uri: `${cdriveUrl}`
         }
       });
       request.then(
@@ -102,7 +102,7 @@ class App extends React.Component {
     var auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'GET',
-      url: `${columbusUrl}api/v1/cdrive/user-details/`,
+      url: `${cdriveApiUrl}user-details/`,
       headers: {'Authorization': auth_header}
     });
     request.then(
@@ -123,7 +123,7 @@ class App extends React.Component {
     var auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'GET',
-      url: `${columbusUrl}api/v1/cdrive/list/`,
+      url: `${cdriveApiUrl}list/`,
       headers: {'Authorization': auth_header}
     });
     request.then(
@@ -146,7 +146,7 @@ class App extends React.Component {
     var auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'POST',
-      url: `${columbusUrl}api/v1/cdrive/upload/`,
+      url: `${cdriveApiUrl}upload/`,
       data: data,
       headers: {'Authorization': auth_header}
     });
@@ -163,7 +163,7 @@ class App extends React.Component {
     var auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'GET',
-      url: `${columbusUrl}api/v1/cdrive/applications-list/`,
+      url: `${cdriveApiUrl}applications-list/`,
       headers: {'Authorization': auth_header}
     });
     request.then(
@@ -191,7 +191,7 @@ class App extends React.Component {
     var auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'POST',
-      url: `${columbusUrl}api/v1/cdrive/install-application/`,
+      url: `${cdriveApiUrl}install-application/`,
       data: data,
       headers: {'Authorization': auth_header}
     });
@@ -212,7 +212,7 @@ class App extends React.Component {
     let auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'DELETE',
-      url: `${columbusUrl}api/v1/cdrive/delete/?file_name=${fileName}`,
+      url: `${cdriveApiUrl}delete/?file_name=${fileName}`,
       headers: {'Authorization': auth_header}
     });
     request.then(
@@ -228,7 +228,7 @@ class App extends React.Component {
     let auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'POST',
-      url: `${columbusUrl}api/v1/cdrive/logout/`,
+      url: `${cdriveApiUrl}logout/`,
       headers: {'Authorization': auth_header}
     });
     request.then(
@@ -244,7 +244,7 @@ class App extends React.Component {
       this.authenticateUser();
       return (null);
     } else {
-      var logoutUrl = `${columbusUrl}authentication/accounts/logout/`;
+      var logoutUrl = `${authenticationUrl}accounts/logout/`;
       let tab = tabs[this.state.activeTab];
 
       let addButton;

@@ -4,7 +4,7 @@ import Cookies from 'universal-cookie';
 import Table from 'react-bootstrap/Table';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
-import { columbusUrl } from './GlobalVariables';
+import { cdriveApiUrl } from './GlobalVariables';
 import ShareModal from './ShareModal';
 import './FileTable.css';
 
@@ -35,7 +35,7 @@ class Drive extends React.Component {
     var auth_header = 'Bearer ' + cookies.get('columbus_token');
     axios({
       method: 'POST',
-      url: `${columbusUrl}api/v1/cdrive/share-file/`,
+      url: `${cdriveApiUrl}share-file/`,
       data: data,
       headers: {'Authorization': auth_header}
     });
@@ -48,7 +48,7 @@ class Drive extends React.Component {
     let auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'GET',
-      url: `${columbusUrl}api/v1/cdrive/download/?file_name=${fileName}`,
+      url: `${cdriveApiUrl}download/?file_name=${fileName}`,
       headers: {'Authorization': auth_header}
     });
     request.then(

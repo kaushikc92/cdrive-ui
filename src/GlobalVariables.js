@@ -1,3 +1,5 @@
-const columbusUrl = "https://a9f7202c77b7e11e98ea412ac368fc7a-1830034118.us-east-1.elb.amazonaws.com/";
+const authenticationUrl = "https://authentication.columbusecosystem.com/";
+const cdriveApiUrl = "https://api.cdrive.columbusecosystem.com/";
+const cdriveUrl = "https://cdrive.columbusecosystem.com/"
 
-export {columbusUrl};
+export {authenticationUrl, cdriveApiUrl, cdriveUrl};
