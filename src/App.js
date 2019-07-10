@@ -35,7 +35,9 @@ class App extends React.Component {
       activeTab: 'drive',
       files: [],
       applications: [],
-      showInstallAppDialog: false
+      showInstallAppDialog: false,
+      isAppInstalling: false,
+      installAppPollId: 0,
     };
     this.fileInput = React.createRef();
     this.onUploadClick = this.onUploadClick.bind(this);
@@ -47,6 +49,7 @@ class App extends React.Component {
     this.handleTabClick = this.handleTabClick.bind(this);
     this.deleteFile = this.deleteFile.bind(this);
     this.handleLogoutClick = this.handleLogoutClick.bind(this);
+    this.installAppPoll = this.installAppPoll.bind(this);
   }
   authenticateUser() {
     const cookies = new Cookies();
@@ -182,9 +185,11 @@ class App extends React.Component {
   }
   installApp(event, dockerUrl) {
     event.preventDefault();
+
     this.setState({
-      showInstallAppDialog: false
+      isAppInstalling: true
     });
+
     const data = new FormData();
     data.append('app_docker_link', dockerUrl);
     const cookies = new Cookies();
@@ -197,9 +202,22 @@ class App extends React.Component {
     });
     request.then(
       response => {
-        this.getApplications();
+        //this.getApplications();
       }
     );
+
+    this.setState({
+      installAppPollId: setInterval(() => this.installAppPoll(), 3000)
+    });
+
+  }
+  installAppPoll() {
+    const request
+    clearInterval(this.state.installAppPollId);
+    this.setState({
+      showInstallAppDialog: false,
+      isAppInstalling: false
+    });
   }
   handleTabClick(event) {
     if(event.target.getAttribute('tab-id') === 'applications') {
@@ -231,13 +249,7 @@ class App extends React.Component {
       url: `${cdriveApiUrl}logout/`,
       headers: {'Authorization': auth_header}
     });
-    request.then(
-      response => {
-        cookies.remove('columbus_token');
-      },
-      err => {
-      }
-    );
+    cookies.remove('columbus_token');
   }
   render() {
     if (this.state.username === '') {
@@ -293,7 +305,7 @@ class App extends React.Component {
             </nav>
             <tab.Component files={this.state.files} deleteFile={this.deleteFile} applications={this.state.applications} /> 
           </div>
-          <InstallAppModal show={this.state.showInstallAppDialog} toggleModal={this.toggleInstallAppDialog} installApp={this.installApp} >
+          <InstallAppModal show={this.state.showInstallAppDialog} toggleModal={this.toggleInstallAppDialog} installApp={this.installApp} isAppInstalling={this.state.isAppInstalling} >
           </InstallAppModal>
         </div>
       );

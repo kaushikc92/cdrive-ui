@@ -5,7 +5,7 @@ class InstallAppModal extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      dockerLink: ""
+      dockerLink: "",
     };
     this.onChange = this.onChange.bind(this);
   }
@@ -13,6 +13,18 @@ class InstallAppModal extends React.Component {
     this.setState({dockerLink: e.target.value});
   }
   render() {
+    let installButton;
+    if (this.props.isAppInstalling) {
+      installButton = 
+        <Button variant="primary" disabled>
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        </Button>
+    } else {
+      installButton = 
+        <Button variant="primary" onClick={e => this.props.installApp(e, this.state.dockerLink)}> 
+          Install
+        </Button>
+    }
     return(
       <Modal show={this.props.show} onHide={this.props.toggleModal}>
         <Modal.Header closeButton>
@@ -29,9 +41,7 @@ class InstallAppModal extends React.Component {
           <Button variant="secondary" onClick={this.props.toggleModal}>
             Close
           </Button>
-          <Button variant="primary" onClick={e => this.props.installApp(e, this.state.dockerLink)}>
-            Install
-          </Button>
+          {installButton}
         </Modal.Footer>
       </Modal>
     );
