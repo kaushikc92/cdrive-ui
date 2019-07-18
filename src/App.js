@@ -3,7 +3,7 @@ import axios from 'axios';
 import Cookies from 'universal-cookie';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
-import { authenticationUrl, cdriveApiUrl, cdriveUrl } from './GlobalVariables';
+import { authenticationUrl, cdriveApiUrl, cdriveUrl, applicationsUrl } from './GlobalVariables';
 import Drive from './Drive';
 import Shared from './Shared';
 import Applications from './Applications';
@@ -70,8 +70,6 @@ class App extends React.Component {
       request.then(
         response => {
           var client_id = response.data.client_id;
-          //var uri = `http://` + window.location.host + window.location.pathname;
-          //window.location.href = `${authUrl}o/authorize/?response_type=code&client_id=${client_id}&redirect_uri=${uri}&state=1234xyz`;
           var redirect_uri = `${cdriveUrl}`;
           const link = document.createElement('a');
           link.href = `${authenticationUrl}o/authorize/?response_type=code&client_id=${client_id}&redirect_uri=${redirect_uri}&state=1234xyz`;
@@ -202,22 +200,28 @@ class App extends React.Component {
     });
     request.then(
       response => {
-        //this.getApplications();
+        this.setState({
+          installAppPollId: setInterval(() => this.installAppPoll(response.data.appName), 3000)
+        });
       }
     );
-
-    this.setState({
-      installAppPollId: setInterval(() => this.installAppPoll(), 3000)
-    });
-
   }
-  installAppPoll() {
-    const request
-    clearInterval(this.state.installAppPollId);
-    this.setState({
-      showInstallAppDialog: false,
-      isAppInstalling: false
+  installAppPoll(appName) {
+    const request = axios({
+      method: 'GET',
+      url: `${applicationsUrl}${this.state.username}/${appName}/`,
     });
+    request.then(
+        response => {
+          clearInterval(this.state.installAppPollId);
+          this.setState({
+            showInstallAppDialog: false,
+            isAppInstalling: false
+          });
+        },
+        err => {
+        }
+    );
   }
   handleTabClick(event) {
     if(event.target.getAttribute('tab-id') === 'applications') {
