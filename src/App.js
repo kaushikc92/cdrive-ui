@@ -48,6 +48,7 @@ class App extends React.Component {
     this.toggleInstallAppDialog = this.toggleInstallAppDialog.bind(this);
     this.handleTabClick = this.handleTabClick.bind(this);
     this.deleteFile = this.deleteFile.bind(this);
+    this.deleteApp= this.deleteApp.bind(this);
     this.handleLogoutClick = this.handleLogoutClick.bind(this);
     this.installAppPoll = this.installAppPoll.bind(this);
   }
@@ -246,6 +247,25 @@ class App extends React.Component {
       }
     );
   }
+  deleteApp(appName) {
+    const data = new FormData();
+    data.append('app_name', appName);
+    const cookies = new Cookies();
+    let auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'POST',
+      url: `${cdriveApiUrl}delete-application/`,
+      data: data,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        this.getApplications();
+      },
+      err => {
+      }
+    );
+  }
   handleLogoutClick(event) {
     const cookies = new Cookies();
     let auth_header = 'Bearer ' + cookies.get('columbus_token');
@@ -308,7 +328,7 @@ class App extends React.Component {
                 </DropdownButton>
               </div>
             </nav>
-            <tab.Component files={this.state.files} deleteFile={this.deleteFile} applications={this.state.applications} /> 
+            <tab.Component files={this.state.files} deleteFile={this.deleteFile} applications={this.state.applications} deleteApp={this.deleteApp} /> 
           </div>
           <InstallAppModal show={this.state.showInstallAppDialog} toggleModal={this.toggleInstallAppDialog} installApp={this.installApp} isAppInstalling={this.state.isAppInstalling} >
           </InstallAppModal>

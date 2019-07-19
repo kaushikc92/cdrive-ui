@@ -1,27 +1,41 @@
 import React from 'react';
-
-/*
-const applications = {
-  proClean: {
-    displayName: "String Profiler and Cleaner",
-    url: `http://0.0.0.0:8000/myapp/list/`,
-    description: "Normalize attributes of a table and view table statistics"
-  },
-}
-*/
+import Table from 'react-bootstrap/Table';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
+import './FileTable.css';
 
 class Applications extends React.Component {
   render() {
-    let links = this.props.applications.map((app, i) => (
-      <li key={i} >
-        <a href={app.app_url}>{app.app_name}</a>
-      </li>
+    if(this.props.applications.length === 0) {
+      return(null);
+    }
+    let rows;
+    rows = this.props.applications.map((app, i) => (
+      <tr key={i}>
+        <td><a className="file-table-text" href={app.app_url}>{app.app_name}</a></td>
+        <td>
+          <DropdownButton variant="transparent" 
+            title="" alignRight >
+            <Dropdown.Item onClick={() => this.props.deleteApp(app.app_name)}>
+              Delete
+            </Dropdown.Item>
+          </DropdownButton>
+        </td>
+      </tr>
     ));
     return(
       <div className="applications-container" >
-        <ul>
-          {links}
-        </ul>
+        <Table>
+          <thead>
+            <tr>
+              <th>Application</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows}
+          </tbody>
+        </Table>
       </div>
     );
   }
