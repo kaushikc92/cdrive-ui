@@ -218,6 +218,7 @@ class App extends React.Component {
             showInstallAppDialog: false,
             isAppInstalling: false
           });
+          this.getApplications();
         },
         err => {
         }
