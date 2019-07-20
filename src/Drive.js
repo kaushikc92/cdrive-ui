@@ -18,6 +18,7 @@ class Drive extends React.Component {
     this.toggleModal = this.toggleModal.bind(this);
     this.shareFile = this.shareFile.bind(this);
     this.downloadFile = this.downloadFile.bind(this);
+    this.deleteFile = this.deleteFile.bind(this);
   }
   handleShareClick(filename) {
     this.setState({selectedFile: filename});
@@ -63,6 +64,22 @@ class Drive extends React.Component {
       }
     );
   }
+  deleteFile(fileName) {
+    const cookies = new Cookies();
+    let auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'DELETE',
+      url: `${cdriveApiUrl}delete/?file_name=${fileName}`,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        this.props.getFiles();
+      },
+      err => {
+      }
+    );
+  }
   render() {
     if(this.props.files.length === 0) {
       return(null);
@@ -82,7 +99,7 @@ class Drive extends React.Component {
             <Dropdown.Item onClick={() => this.downloadFile(fileItem.file_name)}>
               Download
             </Dropdown.Item>
-            <Dropdown.Item onClick={() => this.props.deleteFile(fileItem.file_name)}>
+            <Dropdown.Item onClick={() => this.deleteFile(fileItem.file_name)}>
               Delete
             </Dropdown.Item>
           </DropdownButton>

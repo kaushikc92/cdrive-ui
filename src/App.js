@@ -3,7 +3,7 @@ import axios from 'axios';
 import Cookies from 'universal-cookie';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
-import { authenticationUrl, cdriveApiUrl, cdriveUrl, applicationsUrl } from './GlobalVariables';
+import { authenticationUrl, cdriveApiUrl, cdriveUrl, } from './GlobalVariables';
 import Drive from './Drive';
 import Shared from './Shared';
 import Applications from './Applications';
@@ -36,21 +36,19 @@ class App extends React.Component {
       files: [],
       applications: [],
       showInstallAppDialog: false,
-      isAppInstalling: false,
-      installAppPollId: 0,
     };
+
     this.fileInput = React.createRef();
     this.onUploadClick = this.onUploadClick.bind(this);
     this.handleUploadFile = this.handleUploadFile.bind(this);
+    this.getFiles = this.getFiles.bind(this);
+
     this.getApplications = this.getApplications.bind(this);
     this.handleInstallAppClick = this.handleInstallAppClick.bind(this);
-    this.installApp = this.installApp.bind(this);
     this.toggleInstallAppDialog = this.toggleInstallAppDialog.bind(this);
+    
     this.handleTabClick = this.handleTabClick.bind(this);
-    this.deleteFile = this.deleteFile.bind(this);
-    this.deleteApp= this.deleteApp.bind(this);
     this.handleLogoutClick = this.handleLogoutClick.bind(this);
-    this.installAppPoll = this.installAppPoll.bind(this);
   }
   authenticateUser() {
     const cookies = new Cookies();
@@ -117,6 +115,7 @@ class App extends React.Component {
       err => {
         const cookies = new Cookies();
         cookies.remove('columbus_token'); 
+        this.authenticateUser();
       }
     );
   }
@@ -182,89 +181,11 @@ class App extends React.Component {
   toggleInstallAppDialog() {
     this.setState({ showInstallAppDialog: !this.state.showInstallAppDialog });
   }
-  installApp(event, dockerUrl) {
-    event.preventDefault();
-
-    this.setState({
-      isAppInstalling: true
-    });
-
-    const data = new FormData();
-    data.append('app_docker_link', dockerUrl);
-    const cookies = new Cookies();
-    var auth_header = 'Bearer ' + cookies.get('columbus_token');
-    const request = axios({
-      method: 'POST',
-      url: `${cdriveApiUrl}install-application/`,
-      data: data,
-      headers: {'Authorization': auth_header}
-    });
-    request.then(
-      response => {
-        this.setState({
-          installAppPollId: setInterval(() => this.installAppPoll(response.data.appName), 3000)
-        });
-      }
-    );
-  }
-  installAppPoll(appName) {
-    const request = axios({
-      method: 'GET',
-      url: `${applicationsUrl}${this.state.username}/${appName}/`,
-    });
-    request.then(
-        response => {
-          clearInterval(this.state.installAppPollId);
-          this.setState({
-            showInstallAppDialog: false,
-            isAppInstalling: false
-          });
-          this.getApplications();
-        },
-        err => {
-        }
-    );
-  }
   handleTabClick(event) {
     if(event.target.getAttribute('tab-id') === 'applications') {
       this.getApplications();
     }
     this.setState({activeTab: event.target.getAttribute('tab-id')});
-  }
-  deleteFile(fileName) {
-    const cookies = new Cookies();
-    let auth_header = 'Bearer ' + cookies.get('columbus_token');
-    const request = axios({
-      method: 'DELETE',
-      url: `${cdriveApiUrl}delete/?file_name=${fileName}`,
-      headers: {'Authorization': auth_header}
-    });
-    request.then(
-      response => {
-        this.getFiles();
-      },
-      err => {
-      }
-    );
-  }
-  deleteApp(appName) {
-    const data = new FormData();
-    data.append('app_name', appName);
-    const cookies = new Cookies();
-    let auth_header = 'Bearer ' + cookies.get('columbus_token');
-    const request = axios({
-      method: 'POST',
-      url: `${cdriveApiUrl}delete-application/`,
-      data: data,
-      headers: {'Authorization': auth_header}
-    });
-    request.then(
-      response => {
-        this.getApplications();
-      },
-      err => {
-      }
-    );
   }
   handleLogoutClick(event) {
     const cookies = new Cookies();
@@ -328,9 +249,9 @@ class App extends React.Component {
                 </DropdownButton>
               </div>
             </nav>
-            <tab.Component files={this.state.files} deleteFile={this.deleteFile} applications={this.state.applications} deleteApp={this.deleteApp} /> 
+            <tab.Component files={this.state.files} getFiles={this.getFiles} applications={this.state.applications} getApplications={this.getApplications} /> 
           </div>
-          <InstallAppModal show={this.state.showInstallAppDialog} toggleModal={this.toggleInstallAppDialog} installApp={this.installApp} isAppInstalling={this.state.isAppInstalling} >
+          <InstallAppModal show={this.state.showInstallAppDialog} toggleModal={this.toggleInstallAppDialog} getApplications={this.getApplications} username={this.state.username} >
           </InstallAppModal>
         </div>
       );
