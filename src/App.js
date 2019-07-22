@@ -192,17 +192,29 @@ class App extends React.Component {
     let auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'POST',
-      url: `${cdriveApiUrl}logout/`,
+      url: `${cdriveApiUrl}stop-applications/`,
       headers: {'Authorization': auth_header}
     });
-    cookies.remove('columbus_token');
+    request.then(
+      response => {
+        axios({
+          method: 'POST',
+          url: `${cdriveApiUrl}logout/`,
+          headers: {'Authorization': auth_header}
+        });
+        cookies.remove('columbus_token');
+        var logoutUrl = `${authenticationUrl}accounts/logout/`;
+        window.location.href = logoutUrl;
+      },
+      err => {
+      }
+    );
   }
   render() {
     if (this.state.username === '') {
       this.authenticateUser();
       return (null);
     } else {
-      var logoutUrl = `${authenticationUrl}accounts/logout/`;
       let tab = tabs[this.state.activeTab];
 
       let addButton;
@@ -245,11 +257,11 @@ class App extends React.Component {
               <div className="justify-content-end navbar-collapse collapse">
                 <DropdownButton id="dropdown-basic-button" variant="transparent" 
                   title={this.state.fullname} alignRight >
-                  <Dropdown.Item href={logoutUrl} onClick={this.handleLogoutClick}>Logout</Dropdown.Item>
+                  <Dropdown.Item onClick={this.handleLogoutClick}>Logout</Dropdown.Item>
                 </DropdownButton>
               </div>
             </nav>
-            <tab.Component files={this.state.files} getFiles={this.getFiles} applications={this.state.applications} getApplications={this.getApplications} /> 
+            <tab.Component files={this.state.files} getFiles={this.getFiles} applications={this.state.applications} getApplications={this.getApplications} username={this.state.username} /> 
           </div>
           <InstallAppModal show={this.state.showInstallAppDialog} toggleModal={this.toggleInstallAppDialog} getApplications={this.getApplications} username={this.state.username} >
           </InstallAppModal>

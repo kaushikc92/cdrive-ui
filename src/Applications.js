@@ -2,17 +2,85 @@ import React from 'react';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
 import Table from 'react-bootstrap/Table';
-import Dropdown from 'react-bootstrap/Dropdown';
-import DropdownButton from 'react-bootstrap/DropdownButton';
-import { cdriveApiUrl } from './GlobalVariables';
+import { Button, Dropdown, DropdownButton } from 'react-bootstrap';
+import { cdriveApiUrl, applicationsUrl } from './GlobalVariables';
 import './FileTable.css';
+
+class AppItem extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isOpening: false,
+      openAppPollId: 0,
+    }
+    this.openApp = this.openApp.bind(this);
+    this.openAppPoll = this.openAppPoll.bind(this);
+  }
+  openApp(event) {
+    event.preventDefault();
+    this.setState({
+      isOpening:true,
+    });
+
+    const data = new FormData();
+    data.append('app_name', this.props.appName);
+    const cookies = new Cookies();
+    var auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'POST',
+      url: `${cdriveApiUrl}start-application/`,
+      data: data,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        this.setState({
+          openAppPollId: setInterval(() => this.openAppPoll(), 1000)
+        });
+      }
+    );
+  }
+  openAppPoll() {
+    const request = axios({
+      method: 'GET',
+      url: `${applicationsUrl}${this.props.username}/${this.props.appName}/`,
+    });
+    request.then(
+        response => {
+          clearInterval(this.state.openAppPollId);
+          this.setState({
+            isOpening: false
+          });
+          window.location.href = `${applicationsUrl}${this.props.username}/${this.props.appName}/`
+        },
+        err => {
+        }
+    );
+
+  }
+  render() {
+    let appItem;
+    if (this.state.isOpening) {
+      appItem =
+        <div>
+          <Button variant="link" onClick={this.openApp} >{this.props.appName}</Button>
+          <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <span class="sr-only"></span>
+          </div>
+        </div>
+    } else {
+      appItem = 
+        <div>
+          <Button variant="link" onClick={this.openApp} >{this.props.appName}</Button>
+        </div>
+    }
+    return appItem;
+ }
+}
 
 class Applications extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      currentApp: '',
-    }
     this.deleteApp = this.deleteApp.bind(this);
   }
   deleteApp(appName) {
@@ -34,11 +102,6 @@ class Applications extends React.Component {
       }
     );
   }
-  renderAppName(appName, appUrl) {
-    return(
-
-    );
-  }
   render() {
     if(this.props.applications.length === 0) {
       return(null);
@@ -46,7 +109,7 @@ class Applications extends React.Component {
     let rows;
     rows = this.props.applications.map((app, i) => (
       <tr key={i}>
-        <td><a className="file-table-text" href={app.app_url}>{app.app_name}</a></td>
+        <td><AppItem appName={app.app_name} appUrl={app.app_url} username={this.props.username}/></td>
         <td>
           <DropdownButton variant="transparent" 
             title="" alignRight >
