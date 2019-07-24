@@ -41,17 +41,22 @@ class AppItem extends React.Component {
     );
   }
   openAppPoll() {
+    const cookies = new Cookies();
+    var auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'GET',
-      url: `${applicationsUrl}${this.props.username}/${this.props.appName}/`,
+      url: `${cdriveApiUrl}app-status/?app_name=${this.props.appName}/`,
+      headers: {'Authorization': auth_header}
     });
     request.then(
         response => {
-          clearInterval(this.state.openAppPollId);
-          this.setState({
-            isOpening: false
-          });
-          window.location.href = `${applicationsUrl}${this.props.username}/${this.props.appName}/`
+          if (response.data.app_status === "Running") {
+            clearInterval(this.state.openAppPollId);
+            this.setState({
+              isOpening: false
+            });
+            window.location.href = `${applicationsUrl}${this.props.username}/${this.props.appName}/`
+          }
         },
         err => {
         }
