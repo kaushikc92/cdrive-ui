@@ -50,7 +50,7 @@ class AppItem extends React.Component {
     });
     request.then(
         response => {
-          if (response.data.app_status === "Running") {
+          if (response.data.appStatus === "Running") {
             clearInterval(this.state.openAppPollId);
             this.setState({
               isOpening: false
@@ -114,11 +114,11 @@ class Applications extends React.Component {
     let rows;
     rows = this.props.applications.map((app, i) => (
       <tr key={i}>
-        <td><AppItem appName={app.app_name} appUrl={app.app_url} username={this.props.username}/></td>
+        <td><AppItem appName={app.name} appUrl={app.url} username={this.props.username}/></td>
         <td>
           <DropdownButton variant="transparent" 
             title="" alignRight >
-            <Dropdown.Item onClick={() => this.deleteApp(app.app_name)}>
+            <Dropdown.Item onClick={() => this.deleteApp(app.name)}>
               Delete
             </Dropdown.Item>
           </DropdownButton>
