@@ -7,6 +7,7 @@ import { authenticationUrl, cdriveApiUrl, cdriveUrl, } from './GlobalVariables';
 import Drive from './Drive';
 import Shared from './Shared';
 import Applications from './Applications';
+import Hosted from './Hosted';
 import InstallAppModal from './InstallAppModal';
 import './App.css';
 
@@ -22,6 +23,10 @@ const tabs = {
   applications: {
     DisplayName: "Applications",
     Component: Applications,
+  },
+  hosted: {
+    DisplayName: "Hosted Services",
+    Component: Hosted,
   }
 }
 
@@ -248,6 +253,8 @@ class App extends React.Component {
                   tab-id="shared" onClick={this.handleTabClick}>Shared With Me</li>
                 <li className={this.state.activeTab === "applications" ? "active-side-bar-list-item": "side-bar-list-item"} 
                   tab-id="applications" onClick={this.handleTabClick}>Applications</li>
+                <li className={this.state.activeTab === "hosted" ? "active-side-bar-list-item": "side-bar-list-item"} 
+                  tab-id="hosted" onClick={this.handleTabClick}>Hosted Services</li>
               </ul>
             </div>
           </div>
