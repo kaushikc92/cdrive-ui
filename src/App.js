@@ -3,32 +3,26 @@ import axios from 'axios';
 import Cookies from 'universal-cookie';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
-import { authenticationUrl, cdriveApiUrl, cdriveUrl, } from './GlobalVariables';
-import Drive from './Drive';
-import Shared from './Shared';
-import Applications from './Applications';
-import Hosted from './Hosted';
-import InstallAppModal from './InstallAppModal';
+import { authenticationUrl, cdriveApiUrl, cdriveUrl } from './GlobalVariables';
 import './App.css';
 
-const tabs = {
-  drive: {
-    DisplayName: "My Files",
-    Component: Drive,
+const tabs = [
+  {
+    name: 'drive',
+    displayName: 'Drive',
+    component: Drive,
   },
-  shared: {
-    DisplayName: "Shared with me",
-    Component: Shared,
+  {
+    name: 'applications',
+    displayName: 'Applications',
+    component: Applications,
   },
-  applications: {
-    DisplayName: "Applications",
-    Component: Applications,
+  {
+    name: 'hosted',
+    displayName: 'Hosted Services',
+    component: Hosted,
   },
-  hosted: {
-    DisplayName: "Hosted Services",
-    Component: Hosted,
-  }
-}
+]
 
 class App extends React.Component {
   constructor(props) {
@@ -36,21 +30,8 @@ class App extends React.Component {
     this.state = {
       username: '',
       fullname: '',
-      isUploading: false,
-      activeTab: 'drive',
-      files: [],
-      applications: [],
-      showInstallAppDialog: false,
+      activeTabIndex: 0,
     };
-
-    this.fileInput = React.createRef();
-    this.onUploadClick = this.onUploadClick.bind(this);
-    this.handleUploadFile = this.handleUploadFile.bind(this);
-    this.getFiles = this.getFiles.bind(this);
-
-    this.getApplications = this.getApplications.bind(this);
-    this.handleInstallAppClick = this.handleInstallAppClick.bind(this);
-    this.toggleInstallAppDialog = this.toggleInstallAppDialog.bind(this);
     
     this.handleTabClick = this.handleTabClick.bind(this);
     this.handleLogoutClick = this.handleLogoutClick.bind(this);
@@ -60,7 +41,6 @@ class App extends React.Component {
     var columbus_token = cookies.get('columbus_token');
     if (columbus_token !== undefined) {
       this.fetchUserDetails();
-      this.getFiles();
       return(null);
     }
     var url_string = window.location.href;
@@ -95,7 +75,6 @@ class App extends React.Component {
         response => {
           cookies.set('columbus_token', response.data.access_token);
           this.fetchUserDetails();
-          this.getFiles();
         },
         err => {
         }
@@ -124,73 +103,8 @@ class App extends React.Component {
       }
     );
   }
-  getFiles() {
-    const cookies = new Cookies();
-    var auth_header = 'Bearer ' + cookies.get('columbus_token');
-    const request = axios({
-      method: 'GET',
-      url: `${cdriveApiUrl}list/`,
-      headers: {'Authorization': auth_header}
-    });
-    request.then(
-      response => {
-        this.setState({files: response.data});
-      },
-      err => {
-      }
-    );
-  }
-  onUploadClick() {
-    this.fileInput.current.click();
-  }
-  handleUploadFile(event) {
-    event.preventDefault();
-    const data = new FormData();
-    data.append('file', this.fileInput.current.files[0]);
-    this.setState({isUploading: true});
-    const cookies = new Cookies();
-    var auth_header = 'Bearer ' + cookies.get('columbus_token');
-    const request = axios({
-      method: 'POST',
-      url: `${cdriveApiUrl}upload/`,
-      data: data,
-      headers: {'Authorization': auth_header}
-    });
-    request.then(
-      response => {
-        this.setState({isUploading: false});
-        this.getFiles();
-      }
-    );
-    this.fileInput.current.value = "";
-  }
-  getApplications() {
-    const cookies = new Cookies();
-    var auth_header = 'Bearer ' + cookies.get('columbus_token');
-    const request = axios({
-      method: 'GET',
-      url: `${cdriveApiUrl}applications-list/`,
-      headers: {'Authorization': auth_header}
-    });
-    request.then(
-      response => {
-        this.setState({applications: response.data});
-      },
-      err => {
-      }
-    );
-  }
-  handleInstallAppClick(event) {
-    this.toggleInstallAppDialog();
-  }
-  toggleInstallAppDialog() {
-    this.setState({ showInstallAppDialog: !this.state.showInstallAppDialog });
-  }
-  handleTabClick(event) {
-    if(event.target.getAttribute('tab-id') === 'applications') {
-      this.getApplications();
-    }
-    this.setState({activeTab: event.target.getAttribute('tab-id')});
+  handleTabClick(index) {
+    this.setState({activeTabIndex: index});
   }
   handleLogoutClick(event) {
     const cookies = new Cookies();
@@ -220,47 +134,32 @@ class App extends React.Component {
       this.authenticateUser();
       return (null);
     } else {
-      let tab = tabs[this.state.activeTab];
+      let items;
+      items = tabs.map((tab, i) => {
+        
+        if(i === this.state.activeTabIndex){
+          return (<li className="active-side-bar-list-item">{tab.displayName}</li>);
+        } else {
+          return (<li className="side-bar-list-item" onClick={() => this.handleTabClick(i)} >{tab.displayName}</li>);
+        }
+        
+      });
 
-      let addButton;
-      if (this.state.activeTab === "applications") {
-        addButton = 
-          <button type="button" className="btn btn-primary" onClick={this.handleInstallAppClick} >
-            Install Application
-          </button> ;
-      } else {
-        addButton = 
-          <form className="form-upload" method="post">
-            <input type="file" className="file-upload-input" ref={this.fileInput}
-              onChange={this.handleUploadFile}/>
-            <button type="button" className="btn btn-primary" onClick={this.onUploadClick} >
-              Upload File
-            </button>
-          </form> ;
-      }
       return(
         <div className="cdrive-container" >
           <div className="left-panel">
             <nav className="navbar navbar-expand navbar-light">
-              <span className="navbar-brand">CDrive</span>
+              <span className="navbar-brand">Columbus</span>
             </nav>
             <div className="side-bar">
-              {addButton}
               <ul className="side-bar-list">
-                <li className={this.state.activeTab === "drive" ? "active-side-bar-list-item": "side-bar-list-item"} 
-                  tab-id="drive" onClick={this.handleTabClick}>My Files</li>
-                <li className={this.state.activeTab === "shared" ? "active-side-bar-list-item": "side-bar-list-item"} 
-                  tab-id="shared" onClick={this.handleTabClick}>Shared With Me</li>
-                <li className={this.state.activeTab === "applications" ? "active-side-bar-list-item": "side-bar-list-item"} 
-                  tab-id="applications" onClick={this.handleTabClick}>Applications</li>
-                <li className={this.state.activeTab === "hosted" ? "active-side-bar-list-item": "side-bar-list-item"} 
-                  tab-id="hosted" onClick={this.handleTabClick}>Hosted Services</li>
+                {items}
               </ul>
             </div>
           </div>
           <div className="right-panel">
             <nav className="navbar navbar-expand navbar-light">
-              <span className="navbar-brand">{tab.DisplayName}</span>
+              <span className="navbar-brand">{tabs[this.state.activeTabIndex].displayName}</span>
               <div className="justify-content-end navbar-collapse collapse">
                 <DropdownButton id="dropdown-basic-button" variant="transparent" 
                   title={this.state.fullname} alignRight >
@@ -268,10 +167,8 @@ class App extends React.Component {
                 </DropdownButton>
               </div>
             </nav>
-            <tab.Component files={this.state.files} getFiles={this.getFiles} applications={this.state.applications} getApplications={this.getApplications} username={this.state.username} /> 
+            <tabs[this.state.activeTabIndex].component />
           </div>
-          <InstallAppModal show={this.state.showInstallAppDialog} toggleModal={this.toggleInstallAppDialog} getApplications={this.getApplications} username={this.state.username} >
-          </InstallAppModal>
         </div>
       );
     }

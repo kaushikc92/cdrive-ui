@@ -4,6 +4,7 @@ import Cookies from 'universal-cookie';
 import Table from 'react-bootstrap/Table';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
+import Dropzone from 'react-dropzone';
 import { cdriveApiUrl } from './GlobalVariables';
 import ShareModal from './ShareModal';
 import './FileTable.css';
@@ -19,6 +20,7 @@ class Drive extends React.Component {
     this.shareFile = this.shareFile.bind(this);
     this.downloadFile = this.downloadFile.bind(this);
     this.deleteFile = this.deleteFile.bind(this);
+    this.uploadFiles = this.uploadFiles.bind(this);
   }
   handleShareClick(filename) {
     this.setState({selectedFile: filename});
@@ -80,6 +82,23 @@ class Drive extends React.Component {
       }
     );
   }
+  uploadFiles(files) {
+    const data = new FormData();
+    data.append('file', files[0]);
+    const cookies = new Cookies();
+    var auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'POST',
+      url: `${cdriveApiUrl}upload/`,
+      data: data,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        this.props.getFiles();
+      }
+    );
+  }
   render() {
     if(this.props.files.length === 0) {
       return(null);
@@ -108,24 +127,33 @@ class Drive extends React.Component {
     ));
 
     return(
-      <div className="my-files-container right-panel-item">
-        <Table>
-          <thead>
-            <tr>
-              <th>File Name</th>
-              <th>Size</th>
-              <th>Owner</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows}
-          </tbody>
-        </Table>
-        <ShareModal show={this.state.show} toggleModal={this.toggleModal} selectedFile={this.state.selectedFile}
-        shareFile={this.shareFile} >
-        </ShareModal>
-      </div>
+      <Dropzone onDrop={acceptedFiles => this.uploadFiles(acceptedFiles)} noClick>
+        {({getRootProps, getInputProps}) => (
+            <section>
+            <div {...getRootProps()}>
+              <input {...getInputProps()} />
+              <div className="my-files-container right-panel-item">
+                <Table>
+                  <thead>
+                    <tr>
+                      <th>File Name</th>
+                      <th>Size</th>
+                      <th>Owner</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows}
+                  </tbody>
+                </Table>
+                <ShareModal show={this.state.show} toggleModal={this.toggleModal} selectedFile={this.state.selectedFile}
+                shareFile={this.shareFile} >
+                </ShareModal>
+              </div>
+            </div>
+          </section>
+        )}
+      </Dropzone>
     );
   }
 }
