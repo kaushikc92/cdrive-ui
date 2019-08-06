@@ -8,150 +8,105 @@ import Dropzone from 'react-dropzone';
 import { cdriveApiUrl } from './GlobalVariables';
 import ShareModal from './ShareModal';
 import './FileTable.css';
+import './Drive.css';
 
 class Drive extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      show: false,
-      selectedFile: '',
-    };
-    this.toggleModal = this.toggleModal.bind(this);
-    this.shareFile = this.shareFile.bind(this);
-    this.downloadFile = this.downloadFile.bind(this);
-    this.deleteFile = this.deleteFile.bind(this);
-    this.uploadFiles = this.uploadFiles.bind(this);
+      path: 'Home/' + this.props.username,
+    }
+    this.handleUpload = this.handleUpload.bind(this);
   }
-  handleShareClick(filename) {
-    this.setState({selectedFile: filename});
-    this.toggleModal();
-  }
-  shareFile(e, email) {
-    e.preventDefault();
-    this.setState({
-      show: false,
-    });
+  handleUpload(acceptedFiles) {
+    var file = acceptedFiles[0];
+
     const data = new FormData();
-    data.append('file_name', this.state.selectedFile);
-    data.append('share_with', email);
-    const cookies = new Cookies();
-    var auth_header = 'Bearer ' + cookies.get('columbus_token');
-    axios({
-      method: 'POST',
-      url: `${cdriveApiUrl}share-file/`,
-      data: data,
-      headers: {'Authorization': auth_header}
-    });
-  }
-  toggleModal() {
-    this.setState({ show: !this.state.show });
-  }
-  downloadFile(fileName) {
-    const cookies = new Cookies();
-    let auth_header = 'Bearer ' + cookies.get('columbus_token');
-    const request = axios({
-      method: 'GET',
-      url: `${cdriveApiUrl}download/?file_name=${fileName}`,
-      headers: {'Authorization': auth_header}
-    });
-    request.then(
-      response => {
-        const link = document.createElement('a');
-        link.href = response.data.download_url;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      },
-      err => {
-      }
-    );
-  }
-  deleteFile(fileName) {
-    const cookies = new Cookies();
-    let auth_header = 'Bearer ' + cookies.get('columbus_token');
-    const request = axios({
-      method: 'DELETE',
-      url: `${cdriveApiUrl}delete/?file_name=${fileName}`,
-      headers: {'Authorization': auth_header}
-    });
-    request.then(
-      response => {
-        this.props.getFiles();
-      },
-      err => {
-      }
-    );
-  }
-  uploadFiles(files) {
-    const data = new FormData();
-    data.append('file', files[0]);
+    var path = this.state.path + '/' + file.name;
+    data.append('path', path);
     const cookies = new Cookies();
     var auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'POST',
-      url: `${cdriveApiUrl}upload/`,
+      url: `${cdriveApiUrl}initiate-chunked-upload/`,
       data: data,
       headers: {'Authorization': auth_header}
     });
     request.then(
       response => {
-        this.props.getFiles();
-      }
+        var uploadId = response.data.uploadId;
+        var fileSize = file.size;
+        var chunkSize = 10 * 1024 * 1024;
+        var offset = 0;
+        var partNumber = 0;
+        var chunkReaderBlock = null;
+        var mpu = [];
+
+        var readEventHandler = function(evt) {
+          if (evt.target.error == null) {
+            offset += evt.target.result.length;
+            partNumber += 1;
+
+            const data2 = new FormData();
+            data2.append('partNumber', partNumber);
+            data2.append('path', path);
+            data2.append('uploadId', uploadId);
+            data2.append('chunk', evt.target.result);
+
+            const req2 = axios({
+              method: 'POST',
+              url: `${cdriveApiUrl}upload-chunk/`,
+              data: data2,
+              headers: {'Authorization': auth_header}
+            });
+            req2.then(
+              resp2 => {
+                mpu.push(resp2.data.ETag);
+                if (offset >= fileSize) {
+                  console.log("Done reading file");
+                  const data3 = new FormData();
+                  data3.append('path', path);
+                  data3.append('uploadId', uploadId);
+                  data3.append('partInfo', mpu);
+                  data3.append('size', file.size);
+
+                  const req3 = axios({
+                    method: 'POST',
+                    url: `${cdriveApiUrl}complete-chunked-upload/`,
+                    data: data3,
+                    headers: {'Authorization': auth_header}
+                  });
+                  return;
+                } else {
+                  chunkReaderBlock(offset, chunkSize, file);
+                }
+              },
+            );
+          } else {
+            console.log("Read error: " + evt.target.error);
+            return;
+          }
+        }
+
+        chunkReaderBlock = function(_offset, length, _file) {
+          var r = new FileReader();
+          var blob = _file.slice(_offset, length + _offset);
+          r.onload = readEventHandler;
+          r.readAsText(blob);
+        }
+
+        chunkReaderBlock(offset, chunkSize, file);
+      },
     );
+    
   }
   render() {
-    if(this.props.files.length === 0) {
-      return(null);
-    }
-    let rows;
-    rows = this.props.files.map((fileItem, i) => (
-      <tr key={i}>
-        <td><div className="file-table-text">{fileItem.file_name}</div></td>
-        <td><div className="file-table-text">{fileItem.file_size}</div></td>
-        <td><div className="file-table-text">{fileItem.file_owner}</div></td>
-        <td>
-          <DropdownButton variant="transparent" 
-            title="" alignRight >
-            <Dropdown.Item onClick={() => this.handleShareClick(fileItem.file_name)}>
-              Share
-            </Dropdown.Item>
-            <Dropdown.Item onClick={() => this.downloadFile(fileItem.file_name)}>
-              Download
-            </Dropdown.Item>
-            <Dropdown.Item onClick={() => this.deleteFile(fileItem.file_name)}>
-              Delete
-            </Dropdown.Item>
-          </DropdownButton>
-        </td>
-      </tr>
-    ));
-
     return(
-      <Dropzone onDrop={acceptedFiles => this.uploadFiles(acceptedFiles)} noClick>
+      <Dropzone onDrop={acceptedFiles => this.handleUpload(acceptedFiles)} noClick>
         {({getRootProps, getInputProps}) => (
-            <section>
-            <div {...getRootProps()}>
-              <input {...getInputProps()} />
-              <div className="my-files-container right-panel-item">
-                <Table>
-                  <thead>
-                    <tr>
-                      <th>File Name</th>
-                      <th>Size</th>
-                      <th>Owner</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows}
-                  </tbody>
-                </Table>
-                <ShareModal show={this.state.show} toggleModal={this.toggleModal} selectedFile={this.state.selectedFile}
-                shareFile={this.shareFile} >
-                </ShareModal>
-              </div>
-            </div>
-          </section>
+          <div {...getRootProps()} className="drive-container" >
+            <input {...getInputProps()} />
+          </div>
         )}
       </Dropzone>
     );

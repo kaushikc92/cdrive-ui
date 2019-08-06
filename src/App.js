@@ -4,6 +4,9 @@ import Cookies from 'universal-cookie';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import { authenticationUrl, cdriveApiUrl, cdriveUrl } from './GlobalVariables';
+import Drive from './Drive';
+import Applications from './Applications';
+import Hosted from './Hosted';
 import './App.css';
 
 const tabs = [
@@ -145,6 +148,8 @@ class App extends React.Component {
         
       });
 
+      var ComponentName = tabs[this.state.activeTabIndex].component;
+
       return(
         <div className="cdrive-container" >
           <div className="left-panel">
@@ -167,7 +172,7 @@ class App extends React.Component {
                 </DropdownButton>
               </div>
             </nav>
-            <tabs[this.state.activeTabIndex].component />
+            <ComponentName username={this.state.username} />
           </div>
         </div>
       );
