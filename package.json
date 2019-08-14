@@ -8,6 +8,7 @@
     "react-bootstrap": "^1.0.0-beta.8",
     "react-dom": "^16.8.6",
     "react-dropzone": "^10.1.6",
+    "react-icons": "^3.7.0",
     "react-router-dom": "^5.0.0",
     "react-scripts": "3.0.1",
     "underscore": "^1.9.1",
@@ -33,5 +34,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "homepage": "."
 }
