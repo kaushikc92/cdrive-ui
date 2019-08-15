@@ -4,7 +4,6 @@ import Cookies from 'universal-cookie';
 import Table from 'react-bootstrap/Table';
 import { Button, Dropdown, DropdownButton } from 'react-bootstrap';
 import { cdriveApiUrl, applicationsUrl } from './GlobalVariables';
-import './FileTable.css';
 
 class AppItem extends React.Component {
   constructor(props) {

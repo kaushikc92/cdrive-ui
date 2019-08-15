@@ -5,11 +5,10 @@ import Table from 'react-bootstrap/Table';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Dropzone from 'react-dropzone';
-import { FaFile } from 'react-icons/fa';
-import { FaFolder } from 'react-icons/fa';
+import { FaFile, FaFolder, FaFolderPlus } from 'react-icons/fa';
 import { cdriveApiUrl } from './GlobalVariables';
 import ShareModal from './ShareModal';
-import './FileTable.css';
+import NewFolderModal from './NewFolderModal';
 import './Drive.css';
 
 class Drive extends React.Component {
@@ -17,28 +16,36 @@ class Drive extends React.Component {
     super(props);
     this.state = {
       path: 'Home/' + this.props.username,
+      permission: 'View',
       driveObjects: [],
+      showNewFolderModal: false,
     };
     this.getDriveObjects = this.getDriveObjects.bind(this);
     this.handleUpload = this.handleUpload.bind(this);
     this.directUpload = this.directUpload.bind(this);
     this.chunkedUpload = this.chunkedUpload.bind(this);
     this.breadcrumbClick = this.breadcrumbClick.bind(this);
+    this.tableRowClick = this.tableRowClick.bind(this);
+    this.toggleNewFolderModal = this.toggleNewFolderModal.bind(this);
   }
   componentDidMount() {
-    this.getDriveObjects();
+    this.getDriveObjects(this.state.path);
   }
-  getDriveObjects() {
+  getDriveObjects(path) {
     const cookies = new Cookies();
     var auth_header = 'Bearer ' + cookies.get('columbus_token');
     const request = axios({
       method: 'GET',
-      url: `${cdriveApiUrl}list/?path=${this.state.path}`,
+      url: `${cdriveApiUrl}list/?path=${path}`,
       headers: {'Authorization': auth_header}
     });
     request.then(
       response => {
-        this.setState({driveObjects: response.data});
+        this.setState({
+          driveObjects: response.data.driveObjects,
+          permission: response.data.permission,
+          path: path
+        });
       },
     );
   }
@@ -65,12 +72,14 @@ class Drive extends React.Component {
     });
     request.then(
       response => {
+        this.getDriveObjects(this.state.path);
       },
     );
   }
   chunkedUpload(file) {
     var data = new FormData();
     var path = this.state.path;
+    var onCompleteHandler = this.getDriveObjects;
     data.append('path', path);
     data.append('file_name', file.name);
     const cookies = new Cookies();
@@ -123,7 +132,11 @@ class Drive extends React.Component {
                     url: `${cdriveApiUrl}complete-chunked-upload/`,
                     data: data,
                     headers: {'Authorization': auth_header}
-                  });
+                  }).then(
+                    resp3 => {
+                      onCompleteHandler(path);
+                    },
+                  );
                   return;
                 } else {
                   chunkReaderBlock(offset, chunkSize, file);
@@ -150,8 +163,16 @@ class Drive extends React.Component {
   breadcrumbClick(index) {
     var tokens = this.state.path.split("/");
     var newPath = tokens.slice(0,index+1).join("/");
-    this.setState({path: newPath});
-    this.getDriveObjects();
+    this.getDriveObjects(newPath);
+  }
+  tableRowClick(index) {
+    if (this.state.driveObjects[index].type === "Folder") {
+      var newPath = this.state.path + "/" + this.state.driveObjects[index].name;
+      this.getDriveObjects(newPath);
+    }
+  }
+  toggleNewFolderModal() {
+    this.setState({ showNewFolderModal: !this.state.showNewFolderModal });
   }
   render() {
     var tokens = this.state.path.split("/");
@@ -190,10 +211,11 @@ class Drive extends React.Component {
           size = <td><div className="file-table-text">{dobj.size}</div></td> ;
         }
         return (
-          <tr key={i}>
+          <tr key={i} onClick={() => this.tableRowClick(i)} >
             {name}
             {size}
             <td><div className="file-table-text">{dobj.owner}</div></td>
+            <td />
           </tr>
         );
       });
@@ -204,12 +226,32 @@ class Drive extends React.Component {
               <th>Name</th>
               <th>Size</th>
               <th>Owner</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {rows}
           </tbody>
         </Table>
+      );
+    }
+
+    let menuItems;
+    if (this.state.permission === 'Edit') {
+      menuItems = (
+        <ul className="menu-list">
+          <li className="menu-list-item">
+            <button style={{marginLeft: 10, width: 150}} type="button" className="btn btn-primary" >
+              Upload
+            </button>
+          </li>
+          <li className="menu-list-item">
+            <button type="button" className="btn btn-link" onClick={this.toggleNewFolderModal} >
+              <FaFolderPlus style={{marginRight: 6 }} size={25} color="#92cefe" />
+              New Folder
+            </button>
+          </li>
+        </ul>
       );
     }
 
@@ -223,7 +265,14 @@ class Drive extends React.Component {
                 {items}
               </ol>
             </nav>
-            {table}
+            <div className="drive-table">
+              {table}
+            </div>
+            <div className="drive-menu" >
+              {menuItems}
+            </div>
+            <NewFolderModal show={this.state.showNewFolderModal} toggleModal={this.toggleNewFolderModal} getDriveObjects={this.getDriveObjects} path={this.state.path} >
+            </NewFolderModal>
           </div>
         )}
       </Dropzone>
