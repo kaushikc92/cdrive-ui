@@ -18,15 +18,21 @@ class Drive extends React.Component {
       path: 'Home/' + this.props.username,
       permission: 'View',
       driveObjects: [],
+      shareObject: null,
       showNewFolderModal: false,
+      showShareModal: false,
     };
     this.getDriveObjects = this.getDriveObjects.bind(this);
     this.handleUpload = this.handleUpload.bind(this);
     this.directUpload = this.directUpload.bind(this);
     this.chunkedUpload = this.chunkedUpload.bind(this);
+    this.deleteHandler = this.deleteHandler.bind(this);
+    this.downloadHandler = this.downloadHandler.bind(this);
+    this.shareHandler = this.shareHandler.bind(this);
     this.breadcrumbClick = this.breadcrumbClick.bind(this);
     this.tableRowClick = this.tableRowClick.bind(this);
     this.toggleNewFolderModal = this.toggleNewFolderModal.bind(this);
+    this.toggleShareModal = this.toggleShareModal.bind(this);
   }
   componentDidMount() {
     this.getDriveObjects(this.state.path);
@@ -160,19 +166,68 @@ class Drive extends React.Component {
       },
     );
   }
+  deleteHandler(e, index) {
+    e.preventDefault();
+    e.stopPropagation();
+    var newPath = this.state.path + '/' + this.state.driveObjects[index].name;
+    const cookies = new Cookies();
+    var auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'DELETE',
+      url: `${cdriveApiUrl}delete/?path=${newPath}`,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        this.getDriveObjects(this.state.path);
+      },
+    );
+  }
+  downloadHandler(e, index) {
+    e.preventDefault();
+    e.stopPropagation();
+    var filePath = this.state.path + '/' + this.state.driveObjects[index].name;
+    const cookies = new Cookies();
+    let auth_header = 'Bearer ' + cookies.get('columbus_token');
+    const request = axios({
+      method: 'GET',
+      url: `${cdriveApiUrl}download/?path=${filePath}`,
+      headers: {'Authorization': auth_header}
+    });
+    request.then(
+      response => {
+        const link = document.createElement('a');
+        link.href = response.data.download_url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      },
+    );
+  }
   breadcrumbClick(index) {
     var tokens = this.state.path.split("/");
     var newPath = tokens.slice(0,index+1).join("/");
     this.getDriveObjects(newPath);
   }
-  tableRowClick(index) {
-    if (this.state.driveObjects[index].type === "Folder") {
-      var newPath = this.state.path + "/" + this.state.driveObjects[index].name;
-      this.getDriveObjects(newPath);
+  tableRowClick(e, index) {
+    if (!e.target.classList.contains("btn")) {  
+      if (this.state.driveObjects[index].type === "Folder") {
+        var newPath = this.state.path + "/" + this.state.driveObjects[index].name;
+        this.getDriveObjects(newPath);
+      }
     }
+  }
+  shareHandler(e, index) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState({shareObject: this.state.driveObjects[index]});
+    this.toggleShareModal();
   }
   toggleNewFolderModal() {
     this.setState({ showNewFolderModal: !this.state.showNewFolderModal });
+  }
+  toggleShareModal() {
+    this.setState({ showShareModal: !this.state.showShareModal });
   }
   render() {
     var tokens = this.state.path.split("/");
@@ -191,6 +246,7 @@ class Drive extends React.Component {
       let rows;
       rows = this.state.driveObjects.map((dobj, i) => {
         let size, name;
+        var ddItems = [];
         if (dobj.type === "Folder") {
           name = 
             <td>
@@ -209,13 +265,34 @@ class Drive extends React.Component {
               </div>
             </td> ;
           size = <td><div className="file-table-text">{dobj.size}</div></td> ;
+          ddItems.push(
+            <Dropdown.Item onClick={e => this.downloadHandler(e, i)}>
+              Download
+            </Dropdown.Item>
+          );
         }
+        if (dobj.permission === "Edit") {
+          ddItems.push(
+            <Dropdown.Item onClick={e => this.deleteHandler(e, i)}>
+              Delete
+            </Dropdown.Item>
+          );
+        }
+        ddItems.push(
+          <Dropdown.Item onClick={e => this.shareHandler(e, i)}>
+            Share
+          </Dropdown.Item>
+        );
         return (
-          <tr key={i} onClick={() => this.tableRowClick(i)} >
+          <tr key={i} onClick={e => this.tableRowClick(e, i)} >
             {name}
             {size}
             <td><div className="file-table-text">{dobj.owner}</div></td>
-            <td />
+            <td>
+              <DropdownButton variant="transparent" title="" alignRight >
+                {ddItems}
+              </DropdownButton>
+            </td>
           </tr>
         );
       });
@@ -273,6 +350,7 @@ class Drive extends React.Component {
             </div>
             <NewFolderModal show={this.state.showNewFolderModal} toggleModal={this.toggleNewFolderModal} getDriveObjects={this.getDriveObjects} path={this.state.path} >
             </NewFolderModal>
+            <ShareModal show={this.state.showShareModal} toggleModal={this.toggleShareModal} shareObject={this.state.shareObject} username={this.props.username} path={this.state.path} />
           </div>
         )}
       </Dropzone>
