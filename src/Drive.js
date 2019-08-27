@@ -15,7 +15,7 @@ class Drive extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      path: 'Home/' + this.props.username,
+      path: 'users/' + this.props.username,
       permission: 'View',
       driveObjects: [],
       shareObject: null,
