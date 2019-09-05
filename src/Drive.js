@@ -245,9 +245,10 @@ class Drive extends React.Component {
     if(this.state.driveObjects.length !== 0) {
       let rows;
       rows = this.state.driveObjects.map((dobj, i) => {
-        let size, name;
+        let size, name, rowClass;
         var ddItems = [];
         if (dobj.type === "Folder") {
+          rowClass = "folder-row";
           name = 
             <td>
               <div className="file-table-text">
@@ -257,6 +258,7 @@ class Drive extends React.Component {
             </td> ;
           size = <td><div className="file-table-text"></div></td> ;
         } else {
+          rowClass = "file-row";
           name = 
             <td>
               <div className="file-table-text">
@@ -284,7 +286,7 @@ class Drive extends React.Component {
           </Dropdown.Item>
         );
         return (
-          <tr key={i} onClick={e => this.tableRowClick(e, i)} >
+          <tr key={i} className={rowClass} onClick={e => this.tableRowClick(e, i)} >
             {name}
             {size}
             <td><div className="file-table-text">{dobj.owner}</div></td>
